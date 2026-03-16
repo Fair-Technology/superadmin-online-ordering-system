@@ -3,8 +3,8 @@ import type { Configuration, RedirectRequest } from '@azure/msal-browser';
 
 const msalConfig: Configuration = {
   auth: {
-    clientId: import.meta.env.VITE_SUPERADMIN_CLIENT_ID,
-    authority: import.meta.env.VITE_SUPERADMIN_AUTHORITY + import.meta.env.VITE_SUPERADMIN_TENANT_ID,
+    clientId: import.meta.env.VITE_MSAL_CLIENT_ID,
+    authority: `https://${import.meta.env.VITE_MSAL_TENANT_NAME}.ciamlogin.com/${import.meta.env.VITE_MSAL_TENANT_ID}`,
     redirectUri: window.location.origin,
     postLogoutRedirectUri: window.location.origin,
   },
@@ -18,5 +18,5 @@ export const loginRequest: RedirectRequest = {
 };
 
 export const apiRequest = {
-  scopes: [import.meta.env.VITE_SUPERADMIN_API_SCOPE as string],
+  scopes: [import.meta.env.VITE_MSAL_API_SCOPE as string],
 };

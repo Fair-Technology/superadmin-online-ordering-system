@@ -1,5 +1,14 @@
 import { baseApi } from './baseApi';
 
+export interface UserProfileResponse {
+  id: string;
+  email?: string;
+  name?: string;
+  systemRole: 'user' | 'superadmin';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ShopResponse {
   id: string;
   name: string;
@@ -47,6 +56,10 @@ export interface AuditEntriesResponse {
 
 export const api = baseApi.injectEndpoints({
   endpoints: (build) => ({
+    getMe: build.query<UserProfileResponse, void>({
+      query: () => '/users/me',
+      providesTags: ['UserProfile'],
+    }),
     getShops: build.query<ShopsListResponse, void>({
       query: () => '/shops',
       providesTags: ['Shops'],
@@ -62,4 +75,4 @@ export const api = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetShopsQuery, useGetAuditEntriesByShopQuery } = api;
+export const { useGetMeQuery, useGetShopsQuery, useGetAuditEntriesByShopQuery } = api;
