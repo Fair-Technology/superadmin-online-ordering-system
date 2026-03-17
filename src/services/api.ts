@@ -54,6 +54,70 @@ export interface AuditEntriesResponse {
   pageSize: number;
 }
 
+// Plan types
+export interface PlanLimitResponse {
+  key: string;
+  value: number;
+}
+
+export interface PlanResponse {
+  id: string;
+  name: string;
+  internalKey: string;
+  isDefault: boolean;
+  isVisible: boolean;
+  sortOrder: number;
+  limits: PlanLimitResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlanPricingResponse {
+  id: string;
+  planId: string;
+  currency: string;
+  monthlyAmountCents: number;
+  yearlyAmountCents: number;
+  billingPriceIdMonthly: string | null;
+  billingPriceIdYearly: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SubscriptionStatus = 'free' | 'active' | 'past_due' | 'canceled' | 'expired';
+export type PlanSource = 'default' | 'billing' | 'superadmin_override';
+
+export interface ShopSubscriptionResponse {
+  id: string;
+  shopId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  billingInterval: 'monthly' | 'yearly' | null;
+  currentPeriodStart: string | null;
+  currentPeriodEnd: string | null;
+  billingCustomerId: string | null;
+  billingSubscriptionId: string | null;
+  cancelAtPeriodEnd: boolean;
+  planSource: PlanSource;
+  overriddenBy: string | null;
+  overrideReason: string | null;
+  overrideExpiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ShopUsageResponse {
+  id: string;
+  shopId: string;
+  activeProductCount: number;
+  periodStart: string | null;
+  periodEnd: string | null;
+  lastReconciled: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const api = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMe: build.query<UserProfileResponse, void>({
@@ -72,7 +136,64 @@ export const api = baseApi.injectEndpoints({
         `/shops/${shopId}/audit?page=${page}&pageSize=${pageSize}`,
       providesTags: (_result, _err, { shopId }) => [{ type: 'AuditEntries', id: shopId }],
     }),
+    // Plans
+    getPlans: build.query<{ plans: PlanResponse[] }, void>({
+      query: () => '/plans',
+      providesTags: ['Plans'],
+    }),
+    getPlan: build.query<{ plan: PlanResponse; pricing: PlanPricingResponse[] }, { planId: string }>({
+      query: ({ planId }) => `/plans/${planId}`,
+      providesTags: (_result, _err, { planId }) => [{ type: 'Plans', id: planId }],
+    }),
+    createPlan: build.mutation<{ plan: PlanResponse }, { createPlanRequest: { name: string; internalKey: string; isDefault?: boolean; isVisible?: boolean; sortOrder?: number; limits?: PlanLimitResponse[] } }>({
+      query: ({ createPlanRequest }) => ({ url: '/plans', method: 'POST', body: createPlanRequest }),
+      invalidatesTags: ['Plans'],
+    }),
+    updatePlan: build.mutation<{ plan: PlanResponse }, { planId: string; updatePlanRequest: { name?: string; isVisible?: boolean; sortOrder?: number; limits?: PlanLimitResponse[] } }>({
+      query: ({ planId, updatePlanRequest }) => ({ url: `/plans/${planId}`, method: 'PATCH', body: updatePlanRequest }),
+      invalidatesTags: (_result, _err, { planId }) => [{ type: 'Plans', id: planId }, 'Plans'],
+    }),
+    getPlanPricing: build.query<PlanPricingResponse[], { planId: string }>({
+      query: ({ planId }) => `/plans/${planId}/pricing`,
+      providesTags: (_result, _err, { planId }) => [{ type: 'Plans', id: `pricing-${planId}` }],
+    }),
+    setPlanPricing: build.mutation<{ pricing: PlanPricingResponse }, { planId: string; setPlanPricingRequest: { currency: string; monthlyAmountCents: number; yearlyAmountCents: number; billingPriceIdMonthly?: string | null; billingPriceIdYearly?: string | null } }>({
+      query: ({ planId, setPlanPricingRequest }) => ({ url: `/plans/${planId}/pricing`, method: 'POST', body: setPlanPricingRequest }),
+      invalidatesTags: (_result, _err, { planId }) => [{ type: 'Plans', id: `pricing-${planId}` }],
+    }),
+    // Subscriptions
+    getShopSubscription: build.query<{ subscription: ShopSubscriptionResponse; plan: PlanResponse | null }, { shopId: string }>({
+      query: ({ shopId }) => `/shops/${shopId}/subscription`,
+      providesTags: (_result, _err, { shopId }) => [{ type: 'Subscriptions', id: shopId }],
+    }),
+    overrideShopSubscription: build.mutation<{ subscription: ShopSubscriptionResponse }, { shopId: string; overrideRequest: { planId: string; overrideReason: string; overrideExpiresAt?: string | null } }>({
+      query: ({ shopId, overrideRequest }) => ({ url: `/shops/${shopId}/subscription/override`, method: 'POST', body: overrideRequest }),
+      invalidatesTags: (_result, _err, { shopId }) => [{ type: 'Subscriptions', id: shopId }],
+    }),
+    // Usage
+    getShopUsage: build.query<{ usage: ShopUsageResponse }, { shopId: string }>({
+      query: ({ shopId }) => `/shops/${shopId}/usage`,
+      providesTags: (_result, _err, { shopId }) => [{ type: 'Usage', id: shopId }],
+    }),
+    reconcileShopUsage: build.mutation<{ usage: ShopUsageResponse; reconciledCount: number }, { shopId: string }>({
+      query: ({ shopId }) => ({ url: `/shops/${shopId}/usage/reconcile`, method: 'POST' }),
+      invalidatesTags: (_result, _err, { shopId }) => [{ type: 'Usage', id: shopId }],
+    }),
   }),
 });
 
-export const { useGetMeQuery, useGetShopsQuery, useGetAuditEntriesByShopQuery } = api;
+export const {
+  useGetMeQuery,
+  useGetShopsQuery,
+  useGetAuditEntriesByShopQuery,
+  useGetPlansQuery,
+  useGetPlanQuery,
+  useCreatePlanMutation,
+  useUpdatePlanMutation,
+  useGetPlanPricingQuery,
+  useSetPlanPricingMutation,
+  useGetShopSubscriptionQuery,
+  useOverrideShopSubscriptionMutation,
+  useGetShopUsageQuery,
+  useReconcileShopUsageMutation,
+} = api;

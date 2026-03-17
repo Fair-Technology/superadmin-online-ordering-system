@@ -4,6 +4,11 @@ import { RequireAuth } from '../auth/RequireAuth';
 import { LoginPage } from '../pages/LoginPage';
 import { ShopsPage } from '../pages/ShopsPage';
 import { ShopActivityPage } from '../pages/ShopActivityPage';
+import { PlansPage } from '../pages/PlansPage';
+import { EditPlanPage } from '../pages/EditPlanPage';
+import { PlanPricingPage } from '../pages/PlanPricingPage';
+import { ShopSubscriptionPage } from '../pages/ShopSubscriptionPage';
+import { ShopUsagePage } from '../pages/ShopUsagePage';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +25,11 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <ShopsPage /> },
       { path: 'shops/:shopId/activity', element: <ShopActivityPage /> },
+      { path: 'shops/:shopId/subscription', element: <ShopSubscriptionPage /> },
+      { path: 'shops/:shopId/usage', element: <ShopUsagePage /> },
+      { path: 'plans', element: <PlansPage /> },
+      { path: 'plans/:planId', element: <EditPlanPage /> },
+      { path: 'plans/:planId/pricing', element: <PlanPricingPage /> },
     ],
   },
 ]);
