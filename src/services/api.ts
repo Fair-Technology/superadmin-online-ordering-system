@@ -9,6 +9,13 @@ export interface UserProfileResponse {
   updatedAt: string;
 }
 
+export interface PendingNameChange {
+  requestedName: string;
+  requestedSlug: string;
+  requestedBy: string;
+  requestedAt: string;
+}
+
 export interface ShopResponse {
   id: string;
   name: string;
@@ -17,6 +24,7 @@ export interface ShopResponse {
   currency?: string;
   createdAt: string;
   updatedAt: string;
+  pendingNameChange?: PendingNameChange | null;
 }
 
 export interface ShopsListResponse {
@@ -118,6 +126,33 @@ export interface ShopUsageResponse {
   updatedAt: string;
 }
 
+export interface OrderItemDto {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPriceCents: number;
+  lineTotalCents: number;
+}
+
+export interface OrderDto {
+  id: string;
+  orderRef: string;
+  status: string;
+  items: OrderItemDto[];
+  subtotalCents: number;
+  currency: string;
+  customerName?: string;
+  customerEmail?: string;
+  createdAt: string;
+}
+
+export interface OrdersListResponse {
+  orders: OrderDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export const api = baseApi.injectEndpoints({
   endpoints: (build) => ({
     getMe: build.query<UserProfileResponse, void>({
@@ -179,6 +214,30 @@ export const api = baseApi.injectEndpoints({
       query: ({ shopId }) => ({ url: `/shops/${shopId}/usage/reconcile`, method: 'POST' }),
       invalidatesTags: (_result, _err, { shopId }) => [{ type: 'Usage', id: shopId }],
     }),
+    // Orders
+    getOrdersByShop: build.query<OrdersListResponse, { shopId: string; page?: number; pageSize?: number }>({
+      query: ({ shopId, page = 1, pageSize = 20 }) =>
+        `/shops/${shopId}/orders?page=${page}&pageSize=${pageSize}`,
+      providesTags: (_r, _e, { shopId }) => [{ type: 'Orders', id: shopId }],
+    }),
+    // Name change requests
+    approveShopNameChange: build.mutation<
+      { id: string; name: string; slug: string; updatedAt: string },
+      { shopId: string }
+    >({
+      query: ({ shopId }) => ({
+        url: `/shops/${shopId}/name-change-request/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Shops'],
+    }),
+    rejectShopNameChange: build.mutation<{ id: string; updatedAt: string }, { shopId: string }>({
+      query: ({ shopId }) => ({
+        url: `/shops/${shopId}/name-change-request`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Shops'],
+    }),
   }),
 });
 
@@ -196,4 +255,7 @@ export const {
   useOverrideShopSubscriptionMutation,
   useGetShopUsageQuery,
   useReconcileShopUsageMutation,
+  useGetOrdersByShopQuery,
+  useApproveShopNameChangeMutation,
+  useRejectShopNameChangeMutation,
 } = api;
