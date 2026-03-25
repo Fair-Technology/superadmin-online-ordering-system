@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useGetPlanQuery, useUpdatePlanMutation } from '../services/api';
 import type { PlanLimitResponse } from '../services/api';
 
-const LIMIT_KEYS = ['PRODUCT_LIMIT', 'SHOP_LIMIT'];
+const LIMIT_KEYS = ['PRODUCT_LIMIT'];
 
 export function EditPlanPage() {
   const { planId } = useParams<{ planId: string }>();
