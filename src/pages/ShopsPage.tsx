@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetShopsQuery } from '../services/api';
 import { Store, ArrowRight, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const PAGE_SIZE = 20;
 
@@ -21,6 +22,10 @@ export function ShopsPage() {
     setSearch(value);
     setPage(1);
   };
+
+  if (isLoading) {
+    return <LoadingScreen title="Loading shops" subtitle="Fetching the latest shop list." />;
+  }
 
   return (
     <div>
@@ -43,25 +48,19 @@ export function ShopsPage() {
         </div>
       </div>
 
-      {isLoading && (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">
-          Loading shops...
-        </div>
-      )}
-
       {isError && (
         <div className="glass-card p-12 text-center text-sm text-red-500">
           Failed to load shops. Please try again.
         </div>
       )}
 
-      {!isLoading && !isError && filtered.length === 0 && (
+      {!isError && filtered.length === 0 && (
         <div className="glass-card p-12 text-center text-sm text-gray-500">
           {search ? 'No shops match your search.' : 'No shops found.'}
         </div>
       )}
 
-      {!isLoading && !isError && pageItems.length > 0 && (
+      {!isError && pageItems.length > 0 && (
         <>
           <div className="glass-card overflow-hidden mb-4">
             <table className="w-full text-sm">

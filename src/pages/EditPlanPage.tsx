@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetPlanQuery, useUpdatePlanMutation } from '../services/api';
 import type { PlanLimitResponse } from '../services/api';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const LIMIT_KEYS = ['PRODUCT_LIMIT'];
 
@@ -57,9 +58,7 @@ export function EditPlanPage() {
     }
   }
 
-  if (isLoading) (
-    <div className="glass-card p-12 text-center text-sm text-gray-500">Loading plan...</div>
-  );
+  if (isLoading) return <LoadingScreen title="Loading plan" subtitle="Fetching plan configuration and limits." />;
   if (isError || !data) return (
     <div className="glass-card p-12 text-center text-sm text-red-500">Failed to load plan.</div>
   );

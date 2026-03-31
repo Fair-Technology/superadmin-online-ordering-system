@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGetOrdersByShopQuery } from '../services/api';
 import { ChevronLeft, ChevronLeft as Prev, ChevronRight as Next } from 'lucide-react';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const STATUS_LABELS: Record<string, string> = {
   paid: 'Paid',
@@ -40,6 +41,10 @@ export function ShopOrdersPage() {
 
   const totalPages = data ? Math.ceil(data.total / data.pageSize) : 1;
 
+  if (isLoading) {
+    return <LoadingScreen title="Loading orders" subtitle="Fetching recent orders for this shop." />;
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -56,25 +61,19 @@ export function ShopOrdersPage() {
         )}
       </div>
 
-      {isLoading && (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">
-          Loading orders...
-        </div>
-      )}
-
       {isError && (
         <div className="glass-card p-12 text-center text-sm text-red-500">
           Failed to load orders. Please try again.
         </div>
       )}
 
-      {!isLoading && !isError && data?.orders.length === 0 && (
+      {!isError && data?.orders.length === 0 && (
         <div className="glass-card p-12 text-center text-sm text-gray-500">
           No orders found for this shop.
         </div>
       )}
 
-      {!isLoading && !isError && data && data.orders.length > 0 && (
+      {!isError && data && data.orders.length > 0 && (
         <>
           <div className="glass-card overflow-hidden mb-4">
             <table className="w-full text-sm">

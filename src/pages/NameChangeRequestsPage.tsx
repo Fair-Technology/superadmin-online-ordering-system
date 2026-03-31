@@ -5,6 +5,7 @@ import {
   useRejectShopNameChangeMutation,
 } from '../services/api';
 import { FileEdit } from 'lucide-react';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export function NameChangeRequestsPage() {
   const { data: shopsData, isLoading, isError } = useGetShopsQuery();
@@ -39,20 +40,18 @@ export function NameChangeRequestsPage() {
     }
   };
 
+  if (isLoading) {
+    return <LoadingScreen title="Loading requests" subtitle="Fetching pending shop name changes." />;
+  }
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-indigo-900">Name Change Requests</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          {isLoading ? '' : `${pending.length} pending request${pending.length !== 1 ? 's' : ''}`}
+          {`${pending.length} pending request${pending.length !== 1 ? 's' : ''}`}
         </p>
       </div>
-
-      {isLoading && (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">
-          Loading requests...
-        </div>
-      )}
 
       {isError && (
         <div className="glass-card p-12 text-center text-sm text-red-500">
@@ -60,14 +59,14 @@ export function NameChangeRequestsPage() {
         </div>
       )}
 
-      {!isLoading && !isError && pending.length === 0 && (
+      {!isError && pending.length === 0 && (
         <div className="glass-card p-12 text-center">
           <FileEdit className="w-8 h-8 text-gray-300 mx-auto mb-3" />
           <p className="text-sm text-gray-500">No pending name change requests.</p>
         </div>
       )}
 
-      {!isLoading && !isError && pending.length > 0 && (
+      {!isError && pending.length > 0 && (
         <div className="glass-card overflow-hidden">
           {actionError && (
             <div className="px-6 py-3 bg-red-50 border-b border-red-100 text-sm text-red-600">

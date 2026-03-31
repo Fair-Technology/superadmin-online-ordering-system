@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopSubscriptionQuery, useOverrideShopSubscriptionMutation, useGetPlansQuery } from '../services/api';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const STATUS_COLORS: Record<string, string> = {
   free: 'bg-gray-100 text-gray-600',
@@ -51,9 +52,7 @@ export function ShopSubscriptionPage() {
     }
   }
 
-  if (isLoading) return (
-    <div className="glass-card p-12 text-center text-sm text-gray-500">Loading subscription...</div>
-  );
+  if (isLoading) return <LoadingScreen title="Loading subscription" subtitle="Fetching current plan and billing status." />;
   if (isError || !data) return (
     <div className="glass-card p-12 text-center text-sm text-red-500">Failed to load subscription.</div>
   );

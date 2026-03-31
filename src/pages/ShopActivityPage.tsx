@@ -3,6 +3,7 @@ import { useParams, Link, useLocation } from 'react-router-dom';
 import { useGetAuditEntriesByShopQuery } from '../services/api';
 import type { AuditEntry } from '../services/api';
 import { ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const ENTITY_TYPE_LABELS: Record<string, string> = {
   product: 'Product',
@@ -129,6 +130,10 @@ export function ShopActivityPage() {
 
   const totalPages = data ? Math.ceil(data.total / pageSize) : 1;
 
+  if (isLoading) {
+    return <LoadingScreen title="Loading activity" subtitle="Fetching the latest audit trail for this shop." />;
+  }
+
   return (
     <div>
       {/* Breadcrumb */}
@@ -159,25 +164,19 @@ export function ShopActivityPage() {
         </select>
       </div>
 
-      {isLoading && (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">
-          Loading activity...
-        </div>
-      )}
-
       {isError && (
         <div className="glass-card p-12 text-center text-sm text-red-500">
           Failed to load activity log.
         </div>
       )}
 
-      {!isLoading && !isError && filtered.length === 0 && (
+      {!isError && filtered.length === 0 && (
         <div className="glass-card p-12 text-center text-sm text-gray-500">
           No activity entries found.
         </div>
       )}
 
-      {!isLoading && !isError && filtered.length > 0 && (
+      {!isError && filtered.length > 0 && (
         <div className="space-y-3">
           {filtered.map((entry) => (
             <AuditEntryCard key={entry.id} entry={entry} />

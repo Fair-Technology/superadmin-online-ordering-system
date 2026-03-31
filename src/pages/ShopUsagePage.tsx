@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetShopUsageQuery, useReconcileShopUsageMutation } from '../services/api';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export function ShopUsagePage() {
   const { shopId } = useParams<{ shopId: string }>();
@@ -7,9 +8,7 @@ export function ShopUsagePage() {
   const { data, isLoading, isError } = useGetShopUsageQuery({ shopId: shopId! });
   const [reconcile, { isLoading: isReconciling, data: reconcileData }] = useReconcileShopUsageMutation();
 
-  if (isLoading) return (
-    <div className="glass-card p-12 text-center text-sm text-gray-500">Loading usage...</div>
-  );
+  if (isLoading) return <LoadingScreen title="Loading usage" subtitle="Fetching usage counters and reconciliation status." />;
   if (isError || !data) return (
     <div className="glass-card p-12 text-center text-sm text-red-500">Failed to load usage.</div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useGetPlanPricingQuery, useGetPlanQuery, useSetPlanPricingMutation } from '../services/api';
 import type { PlanPricingResponse } from '../services/api';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 const CURRENCIES = ['EUR', 'AUD', 'USD', 'GBP', 'NZD', 'CAD'];
 
@@ -172,6 +173,10 @@ export function PlanPricingPage() {
   const pricingByCurrency = Object.fromEntries(pricing.map((p) => [p.currency.toUpperCase(), p]));
   const isFree = planData?.plan?.isDefault ?? false;
 
+  if (isLoading || !planData) {
+    return <LoadingScreen title="Loading pricing" subtitle="Fetching plan details and pricing by currency." />;
+  }
+
   return (
     <div>
       <div className="mb-6">
@@ -190,21 +195,17 @@ export function PlanPricingPage() {
         </p>
       </div>
 
-      {isLoading ? (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">Loading…</div>
-      ) : (
-        <div className="glass-card overflow-hidden">
-          {CURRENCIES.map((currency) => (
-            <PricingRow
-              key={currency}
-              planId={planId!}
-              currency={currency}
-              existing={pricingByCurrency[currency]}
-              isFree={isFree}
-            />
-          ))}
-        </div>
-      )}
+      <div className="glass-card overflow-hidden">
+        {CURRENCIES.map((currency) => (
+          <PricingRow
+            key={currency}
+            planId={planId!}
+            currency={currency}
+            existing={pricingByCurrency[currency]}
+            isFree={isFree}
+          />
+        ))}
+      </div>
     </div>
   );
 }

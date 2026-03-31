@@ -3,6 +3,7 @@ import { InteractionStatus } from '@azure/msal-browser';
 import { Navigate } from 'react-router-dom';
 import { useGetMeQuery } from '../services/api';
 import { AccessDeniedPage } from '../pages/AccessDeniedPage';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 interface Props {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export function RequireAuth({ children }: Props) {
 
   // MSAL is still processing the redirect — don't make a routing decision yet
   if (inProgress !== InteractionStatus.None) {
-    return null;
+    return <LoadingScreen title="Signing you in" subtitle="Completing authentication." fullScreen />;
   }
 
   if (!isAuthenticated) {
@@ -29,7 +30,7 @@ export function RequireAuth({ children }: Props) {
 
   // Waiting for profile to load
   if (profileLoading || !profile) {
-    return null;
+    return <LoadingScreen title="Loading superadmin" subtitle="Checking your access and profile." fullScreen />;
   }
 
   if (profile.systemRole !== 'superadmin') {

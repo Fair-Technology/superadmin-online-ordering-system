@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetPlansQuery, useCreatePlanMutation } from '../services/api';
 import type { PlanResponse } from '../services/api';
+import { LoadingScreen } from '../components/ui/LoadingScreen';
 
 export function PlansPage() {
   const { data, isLoading, isError } = useGetPlansQuery();
@@ -31,6 +32,10 @@ export function PlansPage() {
   }
 
   const plans: PlanResponse[] = data?.plans ?? [];
+
+  if (isLoading) {
+    return <LoadingScreen title="Loading plans" subtitle="Fetching plan definitions and pricing settings." />;
+  }
 
   return (
     <div>
@@ -87,21 +92,17 @@ export function PlansPage() {
         </div>
       )}
 
-      {isLoading && (
-        <div className="glass-card p-12 text-center text-sm text-gray-500">Loading plans...</div>
-      )}
-
       {isError && (
         <div className="glass-card p-12 text-center text-sm text-red-500">Failed to load plans.</div>
       )}
 
-      {!isLoading && !isError && plans.length === 0 && (
+      {!isError && plans.length === 0 && (
         <div className="glass-card p-12 text-center text-sm text-gray-500">
           No plans yet. Create one above.
         </div>
       )}
 
-      {!isLoading && !isError && plans.length > 0 && (
+      {!isError && plans.length > 0 && (
         <div className="glass-card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
